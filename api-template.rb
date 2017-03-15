@@ -284,6 +284,22 @@ gsub_file 'config/routes.rb', /devise_for :core_users, class_name: "Admin::CoreU
 copy_file 'app/controllers/admin_controller.rb', 'app/controllers/admin_controller.rb'
 copy_file 'app/controllers/admin/user_controller.rb', 'app/controllers/admin/user_controller.rb'
 
+# adding cache config to development environments
+insert_into_file 'config/environments/development.rb', before: /^end/ do <<-RUBY
+
+    # api cache directory
+    config.api_cache_directory = "\#{Rails.root}/public/cached"
+    RUBY
+end
+
+# adding cache config to production environments
+insert_into_file 'config/environments/production.rb', before: /^end/ do <<-RUBY
+
+    # api cache directory
+    config.api_cache_directory = "\#{Rails.root}/public/cached"
+    RUBY
+end
+
 # kaminari config
 generate('kaminari:config')
 
