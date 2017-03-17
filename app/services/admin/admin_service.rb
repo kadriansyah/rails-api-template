@@ -13,11 +13,7 @@ module Admin
         end
 
         def update_user(user_form)
-            begin
-                user_form.update
-            rescue
-                false
-            end
+            user_form.update
         end
 
         def delete_user(id)

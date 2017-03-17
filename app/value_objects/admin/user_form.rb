@@ -22,13 +22,18 @@ module Admin
 
         def save
             if valid?
-                @core_user = Admin::CoreUser.new(email: self.email,
-                                                 username: self.username,
-                                                 password: self.password,
-                                                 firstname: self.firstname,
-                                                 lastname: self.lastname)
-                @core_user.save
-                true
+                begin
+                    Admin::CoreUser.find_by(username: self.username)
+                    false
+                rescue
+                    @core_user = Admin::CoreUser.new(email: self.email,
+                                                     username: self.username,
+                                                     password: self.password,
+                                                     firstname: self.firstname,
+                                                     lastname: self.lastname)
+                    @core_user.save
+                    true
+                end
             else
                 false
             end
@@ -36,13 +41,17 @@ module Admin
 
         def update
             if valid?
-                @core_user = Admin::CoreUser.find(self.id)
-                @core_user.update_attributes!(email: self.email,
-                                              username: self.username,
-                                              password: self.password,
-                                              firstname: self.firstname,
-                                              lastname: self.lastname)
-                true
+                begin
+                    @core_user = Admin::CoreUser.find(self.id)
+                    @core_user.update_attributes!(email: self.email,
+                                                  username: self.username,
+                                                  password: self.password,
+                                                  firstname: self.firstname,
+                                                  lastname: self.lastname)
+                    true
+                rescue
+                    false
+                end
             else
                 false
             end
