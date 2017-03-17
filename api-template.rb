@@ -37,6 +37,7 @@ gem 'active_model_serializers'
 gem 'jwt' # http://www.thegreatcodeadventure.com/jwt-auth-in-rails-from-scratch/
 gem 'figaro' # put environment variable on application.yml
 gem 'bcrypt'
+gem 'swagger-docs'
 
 gem_group :development do
     gem 'byebug', platform: :mri
@@ -226,11 +227,12 @@ insert_into_file 'config/routes.rb', after: "Rails.application.routes.draw do\n"
     root to: 'index#index'
     scope :admin do
         root to: 'admin#index'
-        resources :users, controller: 'admin/user' do
+        resources :users, controller: 'admin/users' do
             get 'delete', on: :member # http://guides.rubyonrails.org/routing.html#adding-more-restful-actions
             put 'update', on: :collection
         end
     end
+    get '/api' => redirect('/swagger/dist/index.html?url=/apidocs/api-docs.json')
     EOF
 end
 
@@ -252,6 +254,16 @@ end
 
 # kaminari config
 generate('kaminari:config')
+
+# # clone swagger-ui
+# inside('public') do
+#     # run 'git submodule add git@github.com:wordnik/swagger-ui.git swagger'
+#     run 'git clone git@github.com:wordnik/swagger-ui.git swagger'
+# end
+
+# copy swagger-ui & generate API Documentation
+directory 'public/swagger', 'public/swagger'
+run 'rails swagger:docs'
 
 after_bundle do
   git :init

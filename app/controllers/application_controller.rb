@@ -3,7 +3,7 @@ require_dependency 'moslemcorners/auth'
 class ApplicationController < ActionController::API
     before_action :authenticate
 
-    def logged_in?
+    def verified?
         !!current_user
     end
 
@@ -14,11 +14,12 @@ class ApplicationController < ActionController::API
             rescue
                 nil
             end
+
             if decrypted_uid == uid
-                core_user = Admin::CoreUser.find(decrypted_uid)
-                if core_user
+                begin
+                    core_user = Admin::CoreUser.find(decrypted_uid)
                     @current_user ||= core_user
-                else
+                rescue
                     nil
                 end
             else
@@ -30,7 +31,7 @@ class ApplicationController < ActionController::API
     end
 
     def authenticate
-        render json: { status: '404', message: 'unauthorized access' }, status: 401 unless logged_in?
+        render json: { status: '404', message: 'unauthorized access' }, status: 401 unless verified?
     end
 
     private
