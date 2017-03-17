@@ -12,6 +12,8 @@ module Admin
             :lastname
         )
 
+        attr_reader :core_user
+
         # Validations
         validates :email, presence: true
         validates :username, presence: true
@@ -20,12 +22,12 @@ module Admin
 
         def save
             if valid?
-                core_user = Admin::CoreUser.new(email: self.email,
-                                                username: self.username,
-                                                password: self.password,
-                                                firstname: self.firstname,
-                                                lastname: self.lastname)
-                core_user.save
+                @core_user = Admin::CoreUser.new(email: self.email,
+                                                 username: self.username,
+                                                 password: self.password,
+                                                 firstname: self.firstname,
+                                                 lastname: self.lastname)
+                @core_user.save
                 true
             else
                 false
@@ -34,12 +36,12 @@ module Admin
 
         def update
             if valid?
-                core_user = Admin::CoreUser.find(self.id)
-                core_user.update_attributes!(email: self.email,
-                                             username: self.username,
-                                             password: self.password,
-                                             firstname: self.firstname,
-                                             lastname: self.lastname)
+                @core_user = Admin::CoreUser.find(self.id)
+                @core_user.update_attributes!(email: self.email,
+                                              username: self.username,
+                                              password: self.password,
+                                              firstname: self.firstname,
+                                              lastname: self.lastname)
                 true
             else
                 false

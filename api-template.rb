@@ -31,10 +31,12 @@ gem 'redis-namespace'
 gem 'redis-rails'
 gem 'redis-rack-cache'
 gem 'sidekiq'
-gem 'devise'
 gem 'kaminari-mongoid'
 gem 'kaminari-actionview'
 gem 'active_model_serializers'
+gem 'jwt' # http://www.thegreatcodeadventure.com/jwt-auth-in-rails-from-scratch/
+gem 'figaro' # put environment variable on application.yml
+gem 'bcrypt'
 
 gem_group :development do
     gem 'byebug', platform: :mri
@@ -53,7 +55,11 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 run 'bundle install'
 
-# copy serializers, services & value_objects
+# copy controllers
+directory 'app/controllers', 'app/controllers'
+
+# copy models, serializers, services & value_objects
+directory 'app/models', 'app/models'
 directory 'app/serializers', 'app/serializers'
 directory 'app/services', 'app/services'
 directory 'app/value_objects', 'app/value_objects'
@@ -61,8 +67,7 @@ directory 'app/value_objects', 'app/value_objects'
 # copy moslemcorners lib
 directory 'lib/moslemcorners', 'lib/moslemcorners'
 
-# # mongoid
-# generate('mongoid:config')
+# mongoid
 inside 'config' do
     remove_file 'database.yml'
     create_file 'mongoid.yml' do <<-EOF
@@ -213,213 +218,21 @@ test:
     end
 end
 
-#
-# devise
-generate('devise:install')
-
-# copy devise.rb
-copy_file "config/initializers/devise.rb", "config/initializers/devise.rb"
-
-# prepare devise
-generate('devise admin/core_user')
-generate('devise:controllers admin/core_user')
-generate('devise:views admin/core_user')
-
-# adding dependency
-insert_into_file 'app/models/admin/core_user.rb', before: "class Admin::CoreUser\n" do <<-RUBY
-    require 'moslemcorners/common_model'
-
-    RUBY
-end
-
-# adding MoslemCorners::CommonModel & collection name
-insert_into_file 'app/models/admin/core_user.rb', after: "include Mongoid::Document\n" do <<-RUBY
-    include MoslemCorners::CommonModel
-    store_in collection: 'core_users'
-
-    # kaminari page setting
-    paginates_per 20
-
-    RUBY
-end
-
-# adding fields to core_user
-insert_into_file 'app/models/admin/core_user.rb', before: /^end/ do <<-RUBY
-
-    # non devise field
-    field :username, type: String, default: ''
-    field :firstname, type: String, default: ''
-    field :lastname, type: String, default: ''
-
-    RUBY
-end
+# copy config
+directory "config", "config"
 
 # configure routing
-insert_into_file 'config/routes.rb', after: "Rails.application.routes.draw do\n" do <<-RUBY
-
-    devise_for :core_user, class_name: 'Admin::CoreUser', module: :devise,
-               path: 'admin', path_names: { sign_in: 'login', sign_out: 'logout' },
-               :controllers => {
-                   sessions: 'admin/core_user/sessions',
-                   registrations: 'admin/core_user/registrations',
-                   passwords: 'admin/core_user/passwords'
-               }
-
+insert_into_file 'config/routes.rb', after: "Rails.application.routes.draw do\n" do <<-EOF
     root to: 'index#index'
-
     scope :admin do
         root to: 'admin#index'
-
         resources :users, controller: 'admin/user' do
             get 'delete', on: :member # http://guides.rubyonrails.org/routing.html#adding-more-restful-actions
+            put 'update', on: :collection
         end
     end
-    RUBY
+    EOF
 end
-
-# modify devise RegistrationsController
-remove_file "app/controllers/admin/core_user/registrations_controller.rb"
-add_file "app/controllers/admin/core_user/registrations_controller.rb"
-
-# insert from beginning of file using \A, for end of file using \Z
-insert_into_file "app/controllers/admin/core_user/registrations_controller.rb", after: /\A/ do <<-EOF
-class Admin::CoreUser::RegistrationsController < Devise::RegistrationsController
-    # http://api.rubyonrails.org/classes/ActionController/ParamsWrapper.html
-    wrap_parameters :core_user, include: [:email, :username, :password, :confirmation_password, :firstname, :lastname]
-
-    before_action :configure_sign_up_params, only: [:create]
-    before_action :configure_account_update_params, only: [:update]
-
-    respond_to :json
-
-    # GET /resource/sign_up
-    # def new
-    #   super
-    # end
-
-    # POST /resource
-    def create
-        super
-        # TODO custom signup
-        # build_resource(sign_up_params)
-        # resource.save
-        # yield resource if block_given?
-        # if resource.persisted?
-        #     respond_to do |format|
-        #         format.json { render :json => {status: {code: "200", message: "Success"}} }
-        #     end
-        # else
-        #     clean_up_passwords resource
-        #     set_minimum_password_length
-        #     respond_to do |format|
-        #         format.json { render :json => {status: {code: "404", message: "Error"}} }
-        #     end
-        # end
-    end
-
-    # GET /resource/edit
-    # def edit
-    #   super
-    # end
-
-    # PUT /resource
-    def update
-        super
-        # TODO custom update
-        # respond_to do |format|
-        #     format.json { render :json => {status: {code: "200", message: "Success"}} }
-        # end
-    end
-
-    # DELETE /resource
-    # def destroy
-    #   super
-    # end
-
-    # GET /resource/cancel
-    # Forces the session data which is usually expired after sign
-    # in to be expired now. This is useful if the user wants to
-    # cancel oauth signing in/up in the middle of the process,
-    # removing all OAuth session data.
-    # def cancel
-    #   super
-    # end
-
-    protected
-
-    # If you have extra params to permit, append them to the sanitizer.
-    # def configure_sign_up_params
-    #     devise_parameter_sanitizer.permit(:sign_up, keys: [:attribute])
-    # end
-
-    # http://www.peoplecancode.com/tutorials/adding-custom-fields-to-devise
-    def configure_sign_up_params
-        devise_parameter_sanitizer.permit(:sign_up, keys: [:email, :username, :password, :firstname, :lastname])
-    end
-
-    # If you have extra params to permit, append them to the sanitizer.
-    # def configure_account_update_params
-    #   devise_parameter_sanitizer.permit(:account_update, keys: [:attribute])
-    # end
-
-    def configure_account_update_params
-        devise_parameter_sanitizer.permit(:account_update, keys: [:email, :username, :password, :firstname, :lastname])
-    end
-
-    # The path used after sign up.
-    # def after_sign_up_path_for(resource)
-    #   super(resource)
-    # end
-
-    # The path used after sign up for inactive accounts.
-    # def after_inactive_sign_up_path_for(resource)
-    #   super(resource)
-    # end
-end
-EOF
-end
-
-# modify devise SessionsController
-remove_file "app/controllers/admin/core_user/sessions_controller.rb"
-add_file "app/controllers/admin/core_user/sessions_controller.rb"
-
-# insert from beginning of file using \A, for end of file using \Z
-insert_into_file "app/controllers/admin/core_user/sessions_controller.rb", after: /\A/ do <<-EOF
-class Admin::CoreUser::SessionsController < Devise::SessionsController
-    # before_action :configure_sign_in_params, only: [:create]
-
-    # GET /resource/sign_in
-    # def new
-    #   super
-    # end
-
-    # POST /resource/sign_in
-    # def create
-    #   super
-    # end
-
-    # DELETE /resource/sign_out
-    # def destroy
-    #   super
-    # end
-
-    # protected
-
-    # If you have extra params to permit, append them to the sanitizer.
-    # def configure_sign_in_params
-    #   devise_parameter_sanitizer.permit(:sign_in, keys: [:attribute])
-    # end
-    respond_to :json
-end
-EOF
-end
-
-# remove default routing generated by devise
-gsub_file 'config/routes.rb', /devise_for :core_users, class_name: "Admin::CoreUser"/, ''
-
-# copy controllers
-copy_file 'app/controllers/admin_controller.rb', 'app/controllers/admin_controller.rb'
-copy_file 'app/controllers/admin/user_controller.rb', 'app/controllers/admin/user_controller.rb'
 
 # adding cache config to development environments
 insert_into_file 'config/environments/development.rb', before: /^end/ do <<-RUBY

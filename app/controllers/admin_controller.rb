@@ -1,9 +1,9 @@
 require_dependency 'moslemcorners/di_container'
 
-class AdminController < ActionController::API
+class AdminController < ApplicationController
 
     def index
 
     end
-    
+
 end

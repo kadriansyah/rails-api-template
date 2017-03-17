@@ -2,19 +2,30 @@ require_dependency 'moslemcorners/api_cache'
 require_dependency 'moslemcorners/di_container'
 
 module Admin
-    class UserController < ActionController::API
+    class UserController < ApplicationController
         include MoslemCorners::APICache
         include MoslemCorners::INJECT['admin_service']
 
+        before_action :authenticate, except: [:create]
         after_action :create_cache, only: [:index]
 
         # http://api.rubyonrails.org/classes/ActionController/ParamsWrapper.html
         wrap_parameters :core_user, include: [:id, :email, :username, :password, :confirmation_password, :firstname, :lastname]
 
+        def create
+            user_form = Admin::UserForm.new(user_form_params)
+            token, uid = admin_service.create_user(user_form)
+            if token && uid
+                render :json => { status: '200', message: 'Success', uid: uid, token: token }
+            else
+                render :json => { status: '404', message: 'Failed' }
+            end
+        end
+
         def index
             core_users = admin_service.find_users(params[:page])
             if core_users.size > 0
-                render :json => core_users, id: '58c8b93334828d183cade633', root: 'results', each_serializer: Admin::CoreUserSerializer
+                render :json => core_users, root: 'results', each_serializer: Admin::CoreUserSerializer
             else
                 render :json => { results: []}
             end
@@ -22,15 +33,6 @@ module Admin
 
         def delete
             if admin_service.delete_user(params[:id])
-                render :json => { status: '200', message: 'Success' }
-            else
-                render :json => { status: '404', message: 'Failed' }
-            end
-        end
-
-        def create
-            user_form = Admin::UserForm.new(user_form_params)
-            if admin_service.create_user(user_form)
                 render :json => { status: '200', message: 'Success' }
             else
                 render :json => { status: '404', message: 'Failed' }
@@ -53,9 +55,9 @@ module Admin
         def update
             user_form = Admin::UserForm.new(user_form_params)
             if admin_service.update_user(user_form)
-                render :json => { status: '200', message: 'Success' }
+                render :json => { status: '200', message: 'Update Success' }
             else
-                render :json => { status: '404', message: 'Failed' }
+                render :json => { status: '404', message: 'Update Failed' }
             end
         end
 
