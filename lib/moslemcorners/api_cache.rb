@@ -1,5 +1,3 @@
-require_dependency 'fileutils'
-
 module MoslemCorners
     module APICache
         def create_cache
