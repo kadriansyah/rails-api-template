@@ -17,21 +17,26 @@ module Admin
 
         swagger_api :create do
             summary 'Create User and Generate Token'
-            notes 'format: {
-                            "core_user": {
-                                "email": "[email]",
-                                "username": "[username]",
-                                "password": "[password]",
-                                "confirmation_password": "[confirmation_password]",
-                                "firstname": "[firstname]",
-                                "lastname": "[lastname]"
-                	        }
-                         }'
-            param :body, :core_user, :string, :required, 'core_user object'
-            response :ok, 'Success', :create_response_model
+            notes 'Notes...'
+            param :body, :core_user, :create_req_model, :required, 'core_user json object'
+            response :ok, 'Success', :create_res_model
             response :unauthorized
+            response :bad_request
         end
-        swagger_model :create_response_model do
+        swagger_model :create_req_model do
+            description 'CoreUser Request Model Create'
+            property :core_user, :core_user_model_create, :required, 'core_user_model'
+        end
+        swagger_model :core_user_model_create do
+            description 'CoreUser Model Create'
+            property :email, :string, :required, 'email'
+            property :username, :string, :required, 'username'
+            property :password, :string, :required, 'password'
+            property :confirmation_password, :string, :required, 'confirmation_password'
+            property :firstname, :string, :required, 'firstname'
+            property :lastname, :string, :required, 'lastname'
+        end
+        swagger_model :create_res_model do
             description 'Create Response Model'
             property :status, :string, :required, 'Status Code'
             property :message, :string, :required, 'Message'
@@ -50,7 +55,7 @@ module Admin
 
         swagger_api :index do
             summary 'List of Users'
-            notes 'Please provide Notes'
+            notes 'Notes...'
             param :header, :uid, :string, :required, 'UID'
             param :header, :Authorization, :string, :required, 'Bearer [Token]'
             response :ok, 'Success'
@@ -67,7 +72,7 @@ module Admin
 
         swagger_api :delete do
             summary 'Delete User'
-            notes 'Please provide Notes'
+            notes 'Notes...'
             param :header, :uid, :string, :required, 'UID'
             param :header, :Authorization, :string, :required, 'Bearer [Token]'
             param :path, :id, :integer, :required, 'userId'
@@ -84,7 +89,7 @@ module Admin
 
         swagger_api :edit do
             summary 'Edit User'
-            notes 'Please provide Notes'
+            notes 'Notes...'
             param :header, :uid, :string, :required, 'UID'
             param :header, :Authorization, :string, :required, 'Bearer [Token]'
             response :ok, 'Success'
@@ -105,22 +110,26 @@ module Admin
 
         swagger_api :update do
             summary 'Update User'
-            notes 'format: {
-                            "core_user": {
-                                "id": "[UID]",
-                                "email": "[email]",
-                                "username": "[username]",
-                                "password": "[password]",
-                                "confirmation_password": "[confirmation_password]",
-                                "firstname": "[firstname]",
-                                "lastname": "[lastname]"
-                	        }
-                         }'
+            notes 'Notes...'
             param :header, :uid, :string, :required, 'UID'
             param :header, :Authorization, :string, :required, 'Bearer [Token]'
-            param :body, :core_user, :string, :required, 'core_user object'
+            param :body, :core_user, :update_req_model, :required, 'core_user object'
             response :ok, 'Success'
             response :unauthorized
+        end
+        swagger_model :update_req_model do
+            description 'CoreUser Request Model Update'
+            property :core_user, :core_user_model_update, :required, 'core_user_model'
+        end
+        swagger_model :core_user_model_update do
+            description 'CoreUser Model Update'
+            property :id, :string, :required, 'id'
+            property :email, :string, :required, 'email'
+            property :username, :string, :required, 'username'
+            property :password, :string, :required, 'password'
+            property :confirmation_password, :string, :required, 'confirmation_password'
+            property :firstname, :string, :required, 'firstname'
+            property :lastname, :string, :required, 'lastname'
         end
         def update
             user_form = Admin::UserForm.new(user_form_params)

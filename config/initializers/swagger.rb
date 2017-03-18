@@ -19,6 +19,8 @@ Swagger::Docs::Config.register_apis({
                                             :clean_directory => false,
                                             # Ability to setup base controller for each api version. Api::V1::SomeController for example.
                                             :parent_controller => ApplicationController,
+                                            # disable Camelize property
+                                            :camelize_model_properties => false,
                                             # add custom attributes to api-docs
                                             :attributes => {
                                                 :info => {
