@@ -31,7 +31,7 @@ class ApplicationController < ActionController::API
     end
 
     def authenticate
-        render json: { status: '404', message: 'unauthorized access' }, status: 401 unless verified?
+        render json: { status: '401', message: 'unauthorized access' }, status: 401 unless verified?
     end
 
     private

@@ -13,21 +13,30 @@ module Admin
         wrap_parameters :core_user, include: [:id, :email, :username, :password, :confirmation_password, :firstname, :lastname]
 
         # swagger api docs
-        swagger_controller :Users, 'Users'
+        swagger_controller :users, 'Users'
 
         swagger_api :create do
             summary 'Create User and Generate Token'
-            notes 'format is {
-	                            "core_user": {
-                                    "email": "[email]",
-                                    "username": "[username]",
-                                    "password": "[password]",
-                                    "confirmation_password": "[confirmation_password]",
-                                    "firstname": "[firstname]",
-                                    "lastname": "[lastname]"
-                    	        }
-                             }'
+            notes 'format: {
+                            "core_user": {
+                                "email": "[email]",
+                                "username": "[username]",
+                                "password": "[password]",
+                                "confirmation_password": "[confirmation_password]",
+                                "firstname": "[firstname]",
+                                "lastname": "[lastname]"
+                	        }
+                         }'
             param :body, :core_user, :string, :required, 'core_user object'
+            response :ok, 'Success', :create_response_model
+            response :unauthorized
+        end
+        swagger_model :create_response_model do
+            description 'Create Response Model'
+            property :status, :string, :required, 'Status Code'
+            property :message, :string, :required, 'Message'
+            property :uid, :string, :required, 'UID'
+            property :token, :string, :required, 'Token'
         end
         def create
             user_form = Admin::UserForm.new(user_form_params)
@@ -44,6 +53,8 @@ module Admin
             notes 'Please provide Notes'
             param :header, :uid, :string, :required, 'UID'
             param :header, :Authorization, :string, :required, 'Bearer [Token]'
+            response :ok, 'Success'
+            response :unauthorized
         end
         def index
             core_users = admin_service.find_users(params[:page])
@@ -60,6 +71,8 @@ module Admin
             param :header, :uid, :string, :required, 'UID'
             param :header, :Authorization, :string, :required, 'Bearer [Token]'
             param :path, :id, :integer, :required, 'userId'
+            response :ok, 'Success'
+            response :unauthorized
         end
         def delete
             if admin_service.delete_user(params[:id])
@@ -74,6 +87,8 @@ module Admin
             notes 'Please provide Notes'
             param :header, :uid, :string, :required, 'UID'
             param :header, :Authorization, :string, :required, 'Bearer [Token]'
+            response :ok, 'Success'
+            response :unauthorized
         end
         def edit
             id = params[:id]
@@ -90,20 +105,22 @@ module Admin
 
         swagger_api :update do
             summary 'Update User'
-            notes 'format is {
-	                            "core_user": {
-                                    "id": "[UID]",
-                                    "email": "[email]",
-                                    "username": "[username]",
-                                    "password": "[password]",
-                                    "confirmation_password": "[confirmation_password]",
-                                    "firstname": "[firstname]",
-                                    "lastname": "[lastname]"
-                    	        }
-                             }'
+            notes 'format: {
+                            "core_user": {
+                                "id": "[UID]",
+                                "email": "[email]",
+                                "username": "[username]",
+                                "password": "[password]",
+                                "confirmation_password": "[confirmation_password]",
+                                "firstname": "[firstname]",
+                                "lastname": "[lastname]"
+                	        }
+                         }'
             param :header, :uid, :string, :required, 'UID'
             param :header, :Authorization, :string, :required, 'Bearer [Token]'
             param :body, :core_user, :string, :required, 'core_user object'
+            response :ok, 'Success'
+            response :unauthorized
         end
         def update
             user_form = Admin::UserForm.new(user_form_params)
