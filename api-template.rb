@@ -224,7 +224,7 @@ directory "config", "config"
 
 # configure routing
 insert_into_file 'config/routes.rb', after: "Rails.application.routes.draw do\n" do <<-EOF
-    root to: 'index#index'
+    root to: redirect('/swagger/dist/index.html?url=/apidocs/api-docs.json')
     scope :admin do
         root to: 'admin#index'
         resources :users, controller: 'admin/users' do
@@ -232,7 +232,6 @@ insert_into_file 'config/routes.rb', after: "Rails.application.routes.draw do\n"
             put 'update', on: :collection
         end
     end
-    get '/api' => redirect('/swagger/dist/index.html?url=/apidocs/api-docs.json')
     EOF
 end
 
