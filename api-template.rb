@@ -256,8 +256,7 @@ generate('kaminari:config')
 
 # # clone swagger-ui
 # inside('public') do
-#     # run 'git submodule add git@github.com:wordnik/swagger-ui.git swagger'
-#     run 'git clone git@github.com:wordnik/swagger-ui.git swagger'
+#     run 'git clone https://github.com/swagger-api/swagger-ui swagger'
 # end
 
 # copy swagger-ui & generate API Documentation
