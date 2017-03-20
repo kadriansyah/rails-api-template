@@ -254,14 +254,14 @@ end
 # kaminari config
 generate('kaminari:config')
 
-# # clone swagger-ui
-# inside('public') do
-#     run 'git clone https://github.com/swagger-api/swagger-ui swagger'
-# end
+# clone swagger-ui using 1.2 specification
+inside('public') do
+    run 'git clone --branch v2.2.6 https://github.com/swagger-api/swagger-ui.git swagger'
+end
 
-# copy swagger-ui & generate API Documentation
-directory 'public/swagger', 'public/swagger'
-run 'rails swagger:docs'
+# # copy swagger-ui & generate API Documentation
+# directory 'public/swagger', 'public/swagger'
+# run 'rails swagger:docs'
 
 after_bundle do
   git :init
