@@ -27,6 +27,10 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
       if (opts.swaggerOptions.showRequestHeaders) {
         this.model.showRequestHeaders = true;
       }
+
+      if (opts.swaggerOptions.showOperationIds) {
+        this.model.showOperationIds = true;
+      }
     }
     return this;
   },
@@ -83,7 +87,7 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
   },
 
   // Note: copied from CoffeeScript compiled file
-  // TODO: redactor
+  // TODO: refactor
   render: function() {
     var a, auth, auths, code, contentTypeModel, isMethodSubmissionSupported, k, key, l, len, len1, len2, len3, len4, m, modelAuths, n, o, p, param, q, ref, ref1, ref2, ref3, ref4, ref5, responseContentTypeView, responseSignatureView, schema, schemaObj, scopeIndex, signatureModel, statusCode, successResponse, type, v, value, produces, isXML, isJSON;
     isMethodSubmissionSupported = jQuery.inArray(this.model.method, this.model.supportedSubmitMethods()) >= 0;
@@ -258,9 +262,9 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
     }
 
     if (Array.isArray(this.model.security)) {
-      var authsModel = SwaggerUi.utils.parseSecurityDefinitions(this.model.security);
+      var authsModel = SwaggerUi.utils.parseSecurityDefinitions(this.model.security, this.model.parent.securityDefinitions);
 
-      authsModel.isLogout = !_.isEmpty(window.swaggerUi.api.clientAuthorizations.authz);
+      authsModel.isLogout = !_.isEmpty(this.model.clientAuthorizations.authz);
       this.authView = new SwaggerUi.Views.AuthButtonView({
         data: authsModel,
         router: this.router,
@@ -672,6 +676,7 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
         contentType = contentType.split(';')[0].trim();
       }
     }
+
     $('.response_body', $(this.el)).removeClass('json');
     $('.response_body', $(this.el)).removeClass('xml');
 
@@ -682,12 +687,15 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
 
     var pre;
     var code;
+    var skipHighlight = false;
     if (!content) {
       code = $('<code />').text('no content');
       pre = $('<pre class="json" />').append(code);
 
       // JSON
-    } else if (headers['Content-Disposition'] && (/attachment/).test(headers['Content-Disposition']) ||
+    } else if (
+        contentType === 'application/octet-stream' ||
+        headers['Content-Disposition'] && (/attachment/).test(headers['Content-Disposition']) ||
         headers['content-disposition'] && (/attachment/).test(headers['content-disposition']) ||
         headers['Content-Description'] && (/File Transfer/).test(headers['Content-Description']) ||
         headers['content-description'] && (/File Transfer/).test(headers['content-description'])) {
@@ -714,6 +722,7 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
           var responseFilename = /filename=([^;]*);?/.exec(disposition);
           if(responseFilename !== null && responseFilename.length > 1) {
             download = responseFilename[1];
+            fileName = download;
           }
         }
 
@@ -722,6 +731,7 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
         a.innerText = 'Download ' + fileName;
 
         pre = $('<div/>').append(a);
+        skipHighlight = true;
       } else {
         pre = $('<pre class="json" />').append('Download headers detected but your browser does not support downloading binary via XHR (Blob).');
       }
@@ -795,9 +805,14 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
       $('.request_headers', $(this.el)).html('<pre>' + _.escape(JSON.stringify(requestHeaders, null, '  ')).replace(/\n/g, '<br>') + '</pre>');
     }
 
+    // Call user-defined hook
+    if (opts.responseHooks && opts.responseHooks[this.nickname]) {
+      opts.responseHooks[this.nickname](response, this);
+    }
+
     var response_body_el = $('.response_body', $(this.el))[0];
     // only highlight the response if response is less than threshold, default state is highlight response
-    if (opts.highlightSizeThreshold && typeof response.data !== 'undefined' && response.data.length > opts.highlightSizeThreshold) {
+    if (opts.highlightSizeThreshold && typeof response.data !== 'undefined' && response.data.length > opts.highlightSizeThreshold || skipHighlight) {
       return response_body_el;
     } else {
       return hljs.highlightBlock(response_body_el);

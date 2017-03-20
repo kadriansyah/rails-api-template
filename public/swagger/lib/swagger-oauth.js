@@ -11,7 +11,7 @@ var additionalQueryStringParams;
 function handleLogin() {
   var scopes = [];
 
-  var auths = window.swaggerUi.api.authSchemes || window.swaggerUi.api.securityDefinitions;
+  var auths = window.swaggerUiAuth.authSchemes || window.swaggerUiAuth.securityDefinitions;
   if(auths) {
     var key;
     var defs = auths;
@@ -36,8 +36,7 @@ function handleLogin() {
     }
   }
 
-  if(window.swaggerUi.api
-    && window.swaggerUi.api.info) {
+  if(window.swaggerUi.api && window.swaggerUi.api.info) {
     appName = window.swaggerUi.api.info.title;
   }
 
@@ -122,7 +121,18 @@ function handleLogin() {
     //TODO: merge not replace if scheme is different from any existing 
     //(needs to be aware of schemes to do so correctly)
     window.enabledScopes=scopes;    
-    
+
+    /**
+     * Returns the name of the access token parameter returned by the server.
+     *
+     * @param dets
+     *     The authorisation scheme configuration.
+     * @return the name of the access token parameter
+     */
+    function getTokenName(dets) {
+        return dets.vendorExtensions['x-tokenName'] || dets.tokenName;
+    }
+
     for (var key in authSchemes) { 
       if (authSchemes.hasOwnProperty(key) && OAuthSchemeKeys.indexOf(key) != -1) { //only look at keys that match this scope.
         var flow = authSchemes[key].flow;
@@ -130,13 +140,13 @@ function handleLogin() {
         if(authSchemes[key].type === 'oauth2' && flow && (flow === 'implicit' || flow === 'accessCode')) {
           var dets = authSchemes[key];
           url = dets.authorizationUrl + '?response_type=' + (flow === 'implicit' ? 'token' : 'code');
-          window.swaggerUi.tokenName = dets.tokenName || 'access_token';
+          window.swaggerUi.tokenName = getTokenName(dets) || 'access_token';
           window.swaggerUi.tokenUrl = (flow === 'accessCode' ? dets.tokenUrl : null);
           state = key;
         }
         else if(authSchemes[key].type === 'oauth2' && flow && (flow === 'application')) {
             var dets = authSchemes[key];
-            window.swaggerUi.tokenName = dets.tokenName || 'access_token';
+            window.swaggerUi.tokenName = getTokenName(dets) || 'access_token';
             clientCredentialsFlow(scopes, dets.tokenUrl, key);
             return;
         }        
@@ -148,13 +158,13 @@ function handleLogin() {
               var dets = o[t];
               var ep = dets.loginEndpoint.url;
               url = dets.loginEndpoint.url + '?response_type=token';
-              window.swaggerUi.tokenName = dets.tokenName;
+              window.swaggerUi.tokenName = getTokenName(dets);
             }
             else if (o.hasOwnProperty(t) && t === 'accessCode') {
               var dets = o[t];
               var ep = dets.tokenRequestEndpoint.url;
               url = dets.tokenRequestEndpoint.url + '?response_type=code';
-              window.swaggerUi.tokenName = dets.tokenName;
+              window.swaggerUi.tokenName = getTokenName(dets);
             }
           }
         }
@@ -271,7 +281,7 @@ window.processOAuthCode = function processOAuthCode(data) {
 
   $.ajax(
   {
-    url : window.swaggerUi.tokenUrl,
+    url : window.swaggerUiAuth.tokenUrl,
     type: "POST",
     data: params,
     success:function(data, textStatus, jqXHR)
@@ -285,7 +295,7 @@ window.processOAuthCode = function processOAuthCode(data) {
   });
 };
 
-window.onOAuthComplete = function onOAuthComplete(token,OAuthSchemeKey) {
+window.onOAuthComplete = function onOAuthComplete(token, OAuthSchemeKey) {
   if(token) {
     if(token.error) {
       var checkbox = $('input[type=checkbox],.secured')
@@ -295,7 +305,7 @@ window.onOAuthComplete = function onOAuthComplete(token,OAuthSchemeKey) {
       alert(token.error);
     }
     else {
-      var b = token[window.swaggerUi.tokenName];      
+      var b = token[window.swaggerUiAuth.tokenName];      
       if (!OAuthSchemeKey){
           OAuthSchemeKey = token.state;
       }
@@ -339,8 +349,10 @@ window.onOAuthComplete = function onOAuthComplete(token,OAuthSchemeKey) {
             }
           }
         });
-        window.swaggerUi.api.clientAuthorizations.add(window.OAuthSchemeKey, new SwaggerClient.ApiKeyAuthorization('Authorization', 'Bearer ' + b, 'header'));
-        window.swaggerUi.load();
+        if(typeof window.swaggerUi !== 'undefined') {
+          window.swaggerUi.api.clientAuthorizations.add(window.swaggerUiAuth.OAuthSchemeKey, new SwaggerClient.ApiKeyAuthorization('Authorization', 'Bearer ' + b, 'header'));
+          window.swaggerUi.load();
+        }
       }
     }
   }

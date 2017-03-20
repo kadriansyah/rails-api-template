@@ -553,14 +553,30 @@ SwaggerUi.partials.signature = (function () {
     modelsToIgnore[value.name] = value;
 
     // Response support
-    if (value.examples && _.isPlainObject(value.examples) && value.examples['application/json']) {
-      value.definition.example = value.examples['application/json'];
+    if (value.examples && _.isPlainObject(value.examples)) {
+      value = _.cloneDeep(value);
+      var keys = Object.keys(value.examples);
 
-      if (_.isString(value.definition.example)) {
-        value.definition.example = jsyaml.safeLoad(value.definition.example);
+      _.forEach(keys, function(key) {
+        if(key.indexOf('application/json') === 0) {
+          var example = value.examples[key];
+          if (_.isString(example)) {
+            example = jsyaml.safeLoad(example);
+          }
+          value.definition.example = example;
+          return schemaToJSON(value.definition, example, modelsToIgnore, value.modelPropertyMacro);
+        }
+      });
+    }
+
+    if (value.examples) {
+      value = _.cloneDeep(value);
+      var example = value.examples;
+      if (_.isString(example)) {
+        example = jsyaml.safeLoad(example);
       }
-    } else if (!value.definition.example) {
-      value.definition.example = value.examples;
+      value.definition.example = example;
+      return schemaToJSON(value.definition, example, modelsToIgnore, value.modelPropertyMacro);
     }
 
     return schemaToJSON(value.definition, value.models, modelsToIgnore, value.modelPropertyMacro);
@@ -673,7 +689,8 @@ SwaggerUi.partials.signature = (function () {
     return str.join('');
   };
 
-  var getName = function (name, xml) {
+  // Commenting this funtion as the names are now determined beforehand and the prefix part is exposed as a separate function | https://github.com/swagger-api/swagger-ui/issues/2577
+ /** var getName = function (name, xml) {
     var result = name || '';
 
     xml = xml || {};
@@ -681,6 +698,19 @@ SwaggerUi.partials.signature = (function () {
     if (xml.name) {
       result = xml.name;
     }
+
+    if (xml.prefix) {
+      result = xml.prefix + ':' + result;
+    }
+
+    return result;
+  };
+  */
+  
+  var getPrefix = function (name, xml) {
+    var result = name || '';
+
+    xml = xml || {};
 
     if (xml.prefix) {
       result = xml.prefix + ':' + result;
@@ -723,9 +753,12 @@ SwaggerUi.partials.signature = (function () {
     var attributes = [];
 
     if (!items) { return getErrorMessage(); }
-
-    value = createSchemaXML(name, items, models, config);
-
+    var key = name;
+    // If there is a name specified for the array elements, use that for the array elements name | https://github.com/swagger-api/swagger-ui/issues/2577
+    if(items.xml && items.xml.name) {
+        key = items.xml.name;
+    }
+    value = createSchemaXML(key, items, models, config);
     if (namespace) {
       attributes.push(namespace);
     }
@@ -811,7 +844,7 @@ SwaggerUi.partials.signature = (function () {
 
     if (namespace) {
       attrs.push(namespace);
-    }
+    }   
 
     if (!properties && !additionalProperties) { return getErrorMessage(); }
 
@@ -856,9 +889,10 @@ SwaggerUi.partials.signature = (function () {
     var output, index;
     config = config || {};
     config.modelsToIgnore = config.modelsToIgnore || [];
+   
     var descriptor = _.isString($ref) ? getDescriptorByRef($ref, name, models, config)
         : getDescriptor(name, definition, models, config);
-
+    
     if (!descriptor) {
       return getErrorMessage();
     }
@@ -888,10 +922,10 @@ SwaggerUi.partials.signature = (function () {
     if (arguments.length < 4) {
       throw new Error();
     }
-
     this.config = config || {};
     this.config.modelsToIgnore = this.config.modelsToIgnore || [];
-    this.name = getName(name, definition.xml);
+    // name is already set by getDescriptorByRef or getDescriptor function depending on the type. Only prefix, if present is needed to be set here | https://github.com/swagger-api/swagger-ui/issues/2577
+    this.name = getPrefix(name, definition.xml);
     this.definition = definition;
     this.models = models;
     this.type = type;
@@ -901,8 +935,15 @@ SwaggerUi.partials.signature = (function () {
     var modelType = simpleRef($ref);
     var model = models[modelType] || {};
     var type = model.definition && model.definition.type ? model.definition.type : 'object';
-    name = name || model.name;
-
+    // If model definition xml name is present, then that will be preferred over model name. This is the case of preferring XmlElement name over XmlRootElement name if XmlElement name is provided | https://github.com/swagger-api/swagger-ui/issues/2577
+    if(model.definition && model.definition.xml && model.definition.xml.name) {
+        name = name || model.definition.xml.name || model.name;
+    }
+    // else only model name will be considered for determination | https://github.com/swagger-api/swagger-ui/issues/2577
+    else {
+        name = name || model.name;
+    }
+    
     if (config.modelsToIgnore.indexOf($ref) > -1) {
       type = 'loop';
       config.loopTo = modelType;
@@ -913,13 +954,15 @@ SwaggerUi.partials.signature = (function () {
     if (!model.definition) {
       return null;
     }
-
-    return new Descriptor(name, type, model.definition, models, config);
+    return new Descriptor(name, type, model.definition, models, config);    
   }
 
   function getDescriptor (name, definition, models, config){
     var type = definition.type || 'object';
-
+    // If definition xml name is present, then that will be preferred over name | https://github.com/swagger-api/swagger-ui/issues/2577
+    if(definition.xml && definition.xml.name) {
+        name = definition.xml.name || name;
+    }
     if (!definition) {
       return null;
     }

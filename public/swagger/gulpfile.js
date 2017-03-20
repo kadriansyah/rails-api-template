@@ -13,7 +13,11 @@ var connect = require('gulp-connect');
 var header = require('gulp-header');
 var order = require('gulp-order');
 var jshint = require('gulp-jshint');
+var runSequence = require('run-sequence');
+var cssnano = require('gulp-cssnano');
 var pkg = require('./package.json');
+var sourcemaps = require('gulp-sourcemaps');
+
 
 var banner = ['/**',
   ' * <%= pkg.name %> - <%= pkg.description %>',
@@ -58,10 +62,12 @@ function _dist() {
         .src(['./src/main/template/templates.js'])
         .on('error', log)
     )
+    .pipe(sourcemaps.init({loadMaps: true}))
     .pipe(order(['scripts.js', 'templates.js']))
     .pipe(concat('swagger-ui.js'))
     .pipe(wrap('(function(){<%= contents %>}).call(this);'))
     .pipe(header(banner, { pkg: pkg }))
+    .pipe(sourcemaps.write())
     .pipe(gulp.dest('./dist'))
     .pipe(uglify())
     .on('error', log)
@@ -126,6 +132,23 @@ gulp.task('copy-local-specs', function () {
     .on('error', log);
 });
 
+gulp.task('minify-css', function() {
+    /** Minify all CSS within dist folder, runs after dist process*/
+
+    return gulp.src('./dist/css/*.css')
+        .pipe(cssnano())
+        .pipe(gulp.dest('./dist/css'));
+});
+
+gulp.task('uglify-libs', function() {
+    /**
+     * Minify all JS libs within the dist folder.  A nice TODO would be to use versions from CDN
+     */
+    gulp.src('./dist/lib/*.js')
+        .pipe(uglify())
+        .pipe(gulp.dest('./dist/lib'));
+});
+
 /**
  * Watch for changes and recompile
  */
@@ -162,7 +185,11 @@ gulp.task('handlebars', function () {
         .on('error', log);
 });
 
-gulp.task('default', ['dist', 'copy']);
+gulp.task('default', function(callback) {
+    runSequence(['dist', 'copy'],
+                ['uglify-libs', 'minify-css'],
+                callback);
+});
 gulp.task('serve', ['connect', 'watch']);
 gulp.task('dev', ['default'], function () {
   gulp.start('serve');

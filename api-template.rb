@@ -256,7 +256,7 @@ generate('kaminari:config')
 
 # # clone swagger-ui using 1.2 specification
 # inside('public') do
-#     run 'git clone --branch v2.2.6 https://github.com/swagger-api/swagger-ui.git swagger'
+#     run 'git clone --branch v2.2.10 https://github.com/swagger-api/swagger-ui.git swagger'
 # end
 
 # copy swagger-ui & generate API Documentation
