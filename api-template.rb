@@ -271,13 +271,20 @@ gsub_file 'config/deploy.rb', /set :repo_url.*$/, ""
 gsub_file 'config/deploy.rb', /#.*$/, ""
 insert_into_file 'config/deploy.rb', after: /lock.*$/ do <<-EOF
 
-set :application, 'android.alodokter.com'
-set :rvm_ruby_version, '2.2.3@alodokter_android'
+# The name of the application
+set :application, 'example.name_of_application'
 
-set :repo_url, 'git@bitbucket.org:kadriansyah_alodokter/android-user-application-backend.git'
+# Select a gemset
+# example ruby-2.3.3@rails
+set :rvm_ruby_version, 'ruby-X.X.X@name_of_gemset'
+
+# URL to the repository.
+set :repo_url, 'ssh://git@example.com:30000/~/me/my_repo.git'
+
+# The branch name to be deployed
 set :branch, 'master'
 
-set :user,  'grumpycat'
+set :user,  '<ssh user>'
 set :use_sudo,  false
 set :ssh_options,   { forward_agent: true, user: fetch(:user), keys: %w(~/.ssh/id_rsa.pub) }
 
@@ -319,7 +326,7 @@ end
 insert_into_file 'config/deploy/production.rb', after: /# server "db.example.com".*$\n/ do <<-EOF
 
 set :stage, :production
-server 'alodokter-android01', port: 3006, user: 'grumpycat', roles: %w{app db web}, primary: true
+server '<ip address production>', port: '<ssh port for production>', user: '<ssh user for production>', roles: %w{app db web}, primary: true
 
     EOF
 end
@@ -328,7 +335,7 @@ end
 insert_into_file 'config/deploy/staging.rb', after: /# server "db.example.com".*$\n/ do <<-EOF
 
 set :stage, :staging
-server 'alodokter-android01', port: 3006, user: 'grumpycat', roles: %w{app db web}, primary: true
+server '<ip address staging>', port: '<ssh port for staging>', user: '<ssh user for staging>', roles: %w{app db web}, primary: true
 
     EOF
 end
