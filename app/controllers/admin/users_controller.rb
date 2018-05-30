@@ -4,7 +4,7 @@ require 'moslemcorners/di_container'
 module Admin
     class UsersController < ApplicationController
         include MoslemCorners::APICache
-        include MoslemCorners::INJECT['admin_service']
+        include MoslemCorners::INJECT[:admin_service]
 
         before_action :authenticate, except: [:create]
         after_action :create_cache, only: [:index]
@@ -160,7 +160,7 @@ module Admin
                 end
             end
         end
-        def delete
+        def destroy
             if admin_service.delete_user(params[:id])
                 render :json => { status: '200', message: 'Success' }
             else

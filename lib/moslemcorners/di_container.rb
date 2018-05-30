@@ -6,13 +6,14 @@ module MoslemCorners
     class DIContainer
         extend Dry::Container::Mixin
 
-        register 'admin_service' do
+        register :admin_service do
             Admin::AdminService.new
         end
 
-        register 'system_cache' do
+        register :system_cache do
             MoslemCorners::Cache.instance # return singleton object
         end
+
     end
 
     # dependency injection
