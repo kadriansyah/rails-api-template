@@ -1,5 +1,5 @@
-require_dependency 'moslemcorners/api_cache'
-require_dependency 'moslemcorners/di_container'
+require 'moslemcorners/api_cache'
+require 'moslemcorners/di_container'
 
 module Admin
     class UsersController < ApplicationController
@@ -13,35 +13,51 @@ module Admin
         wrap_parameters :core_user, include: [:id, :email, :username, :password, :confirmation_password, :firstname, :lastname]
 
         # swagger api docs
-        swagger_controller :users, 'Users'
-
-        swagger_api :create do
-            summary 'Create User and Generate Token'
-            notes 'Notes...'
-            param :body, :core_user, :create_req_model, :required, 'core_user json object'
-            response :ok, 'Success', :create_res_model
-            response :unauthorized
-            response :bad_request
-        end
-        swagger_model :create_req_model do
-            description 'CoreUser Request Model Create'
-            property :core_user, :core_user_model_create, :required, 'core_user_model'
-        end
-        swagger_model :core_user_model_create do
-            description 'CoreUser Model Create'
-            property :email, :string, :required, 'email'
-            property :username, :string, :required, 'username'
-            property :password, :string, :required, 'password'
-            property :confirmation_password, :string, :required, 'confirmation_password'
-            property :firstname, :string, :required, 'firstname'
-            property :lastname, :string, :required, 'lastname'
-        end
-        swagger_model :create_res_model do
-            description 'Create Response Model'
-            property :status, :string, :required, 'Status Code'
-            property :message, :string, :required, 'Message'
-            property :uid, :string, :required, 'UID'
-            property :token, :string, :required, 'Token'
+        swagger_path '/admin/users' do
+            operation :post do
+                key :summary, 'Create User and Generate Token'
+                key :description, 'Create User and Generate Token'
+                key :operationId, 'addCoreUser'
+                key :produces, [
+                    'application/json'
+                ]
+                key :tags, [
+                    'core_user'
+                ]
+                parameter do
+                    key :name, :uid
+                    key :in, :header
+                    key :description, 'UID'
+                    key :required, true
+                end
+                parameter do
+                    key :name, :authorization
+                    key :in, :header
+                    key :description, 'Bearer [Token]'
+                    key :required, true
+                end
+                parameter do
+                    key :name, :core_user
+                    key :in, :body
+                    key :description, 'User to add'
+                    key :required, true
+                    schema do
+                        key :'$ref', 'Admin::UserForm'
+                    end
+                end
+                response 200 do
+                    key :description, 'create user response'
+                    schema do
+                        key :'$ref', 'Admin::CreateResponse'
+                    end
+                end
+                response :default do
+                    key :description, 'unexpected error'
+                    schema do
+                        key :'$ref', 'Common::Response'
+                    end
+                end
+            end
         end
         def create
             user_form = Admin::UserForm.new(user_form_params)
@@ -53,13 +69,46 @@ module Admin
             end
         end
 
-        swagger_api :index do
-            summary 'List of Users'
-            notes 'Notes...'
-            param :header, :uid, :string, :required, 'UID'
-            param :header, :Authorization, :string, :required, 'Bearer [Token]'
-            response :ok, 'Success'
-            response :unauthorized
+        swagger_path '/admin/users' do
+            operation :get do
+                key :summary, 'All Users'
+                key :description, 'Returns all users from the system that the user has access to'
+                key :operationId, 'findCoreUsers'
+                key :produces, [
+                    'application/json',
+                    'text/html',
+                ]
+                key :tags, [
+                    'core_user'
+                ]
+                parameter do
+                    key :name, :uid
+                    key :in, :header
+                    key :description, 'UID'
+                    key :required, true
+                end
+                parameter do
+                    key :name, :authorization
+                    key :in, :header
+                    key :description, 'Bearer [Token]'
+                    key :required, true
+                end
+                response 200 do
+                    key :description, 'users response'
+                    schema do
+                        key :type, :array
+                        items do
+                            key :'$ref', 'Admin::CoreUser'
+                        end
+                    end
+                end
+                response :default do
+                    key :description, 'unexpected error'
+                    schema do
+                        key :'$ref', 'Common::Response'
+                    end
+                end
+            end
         end
         def index
             core_users = admin_service.find_users(params[:page])
@@ -70,14 +119,46 @@ module Admin
             end
         end
 
-        swagger_api :delete do
-            summary 'Delete User'
-            notes 'Notes...'
-            param :header, :uid, :string, :required, 'UID'
-            param :header, :Authorization, :string, :required, 'Bearer [Token]'
-            param :path, :id, :integer, :required, 'userId'
-            response :ok, 'Success'
-            response :unauthorized
+        swagger_path '/admin/users/{id}' do
+            operation :delete do
+                key :summary, 'Delete User'
+                key :description, 'Delete user with certain id'
+                key :operationId, 'deleteCoreUsers'
+                key :produces, [
+                    'application/json',
+                    'text/html',
+                ]
+                key :tags, [
+                    'core_user'
+                ]
+                parameter do
+                    key :name, :uid
+                    key :in, :header
+                    key :description, 'UID'
+                    key :required, true
+                end
+                parameter do
+                    key :name, :authorization
+                    key :in, :header
+                    key :description, 'Bearer [Token]'
+                    key :required, true
+                end
+                parameter do
+                    key :name, :id
+                    key :in, :path
+                    key :description, 'User ID'
+                    key :required, true
+                end
+                response 200 do
+                    key :description, 'user deleted'
+                end
+                response :default do
+                    key :description, 'unexpected error'
+                    schema do
+                        key :'$ref', 'Common::Response'
+                    end
+                end
+            end
         end
         def delete
             if admin_service.delete_user(params[:id])
@@ -87,13 +168,49 @@ module Admin
             end
         end
 
-        swagger_api :edit do
-            summary 'Edit User'
-            notes 'Notes...'
-            param :header, :uid, :string, :required, 'UID'
-            param :header, :Authorization, :string, :required, 'Bearer [Token]'
-            response :ok, 'Success'
-            response :unauthorized
+        swagger_path '/admin/users/{id}/edit' do
+            operation :get do
+                key :summary, 'Edit User'
+                key :description, 'Edit user with certain id'
+                key :operationId, 'editCoreUser'
+                key :produces, [
+                    'application/json',
+                    'text/html',
+                ]
+                key :tags, [
+                    'core_user'
+                ]
+                parameter do
+                    key :name, :uid
+                    key :in, :header
+                    key :description, 'UID'
+                    key :required, true
+                end
+                parameter do
+                    key :name, :authorization
+                    key :in, :header
+                    key :description, 'Bearer [Token]'
+                    key :required, true
+                end
+                parameter do
+                    key :name, :id
+                    key :in, :path
+                    key :description, 'User ID'
+                    key :required, true
+                end
+                response 200 do
+                    key :description, 'user deleted'
+                    schema do
+                        key :'$ref', 'Admin::EditResponse'
+                    end
+                end
+                response :default do
+                    key :description, 'unexpected error'
+                    schema do
+                        key :'$ref', 'Common::Response'
+                    end
+                end
+            end
         end
         def edit
             id = params[:id]
@@ -108,28 +225,52 @@ module Admin
             end
         end
 
-        swagger_api :update do
-            summary 'Update User'
-            notes 'Notes...'
-            param :header, :uid, :string, :required, 'UID'
-            param :header, :Authorization, :string, :required, 'Bearer [Token]'
-            param :body, :core_user, :update_req_model, :required, 'core_user object'
-            response :ok, 'Success'
-            response :unauthorized
-        end
-        swagger_model :update_req_model do
-            description 'CoreUser Request Model Update'
-            property :core_user, :core_user_model_update, :required, 'core_user_model'
-        end
-        swagger_model :core_user_model_update do
-            description 'CoreUser Model Update'
-            property :id, :string, :required, 'id'
-            property :email, :string, :required, 'email'
-            property :username, :string, :required, 'username'
-            property :password, :string, :required, 'password'
-            property :confirmation_password, :string, :required, 'confirmation_password'
-            property :firstname, :string, :required, 'firstname'
-            property :lastname, :string, :required, 'lastname'
+        swagger_path '/admin/users/{id}' do
+            operation :put do
+                key :summary, 'Update User'
+                key :description, 'Update user with certain id'
+                key :operationId, 'updateCoreUser'
+                key :produces, [
+                    'application/json',
+                    'text/html',
+                ]
+                key :tags, [
+                    'core_user'
+                ]
+                parameter do
+                    key :name, :uid
+                    key :in, :header
+                    key :description, 'UID'
+                    key :required, true
+                end
+                parameter do
+                    key :name, :authorization
+                    key :in, :header
+                    key :description, 'Bearer [Token]'
+                    key :required, true
+                end
+                parameter do
+                    key :name, :core_user
+                    key :in, :body
+                    key :description, 'User to update'
+                    key :required, true
+                    schema do
+                        key :'$ref', 'Admin::UserForm'
+                    end
+                end
+                response 200 do
+                    key :description, 'user updated'
+                    schema do
+                        key :'$ref', 'Common::Response'
+                    end
+                end
+                response :default do
+                    key :description, 'unexpected error'
+                    schema do
+                        key :'$ref', 'Common::Response'
+                    end
+                end
+            end
         end
         def update
             user_form = Admin::UserForm.new(user_form_params)

@@ -18,10 +18,10 @@ prepend_to_file "Gemfile" do
   "source \"https://rubygems.org\""
 end
 
-
 # gems
-gem "rails", "~> 5.0.2"
-gem 'puma', '~> 3.0'
+gem 'rails'
+gem 'bootsnap'
+gem 'puma'
 gem 'jbuilder'
 gem 'mongoid'
 gem 'dry-container'
@@ -37,19 +37,19 @@ gem 'active_model_serializers'
 gem 'jwt' # http://www.thegreatcodeadventure.com/jwt-auth-in-rails-from-scratch/
 gem 'figaro' # put environment variable on application.yml
 gem 'bcrypt'
-gem 'swagger-docs'
-gem 'capistrano', '~> 3.8'
+gem 'swagger-blocks'
+gem 'capistrano'
 
 gem_group :development do
     gem 'byebug', platform: :mri
 end
 
 gem_group :development, :test do
-    gem 'listen', '~> 3.0.5'
+    gem 'listen'
 
     # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
     gem 'spring'
-    gem 'spring-watcher-listen', '~> 2.0.0'
+    gem 'spring-watcher-listen'
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
@@ -80,7 +80,7 @@ development:
     default:
       # Defines the name of the default database that Mongoid can connect to.
       # (required).
-      database: quran
+      database: moslemcorner
       # Provides the hosts the default client can connect to. Must be an array
       # of host:port pairs. (required)
       hosts:
@@ -225,7 +225,8 @@ directory "config", "config"
 
 # configure routing
 insert_into_file 'config/routes.rb', after: "Rails.application.routes.draw do\n" do <<-EOF
-    root to: redirect('/swagger/dist/index.html?url=/apidocs/api-docs.json')
+    root to: redirect('/swagger/dist/index.html?url=/apidocs')
+    resources :apidocs, only: [:index]
     scope :admin do
         root to: 'admin#index'
         resources :users, controller: 'admin/users' do
@@ -260,9 +261,14 @@ generate('kaminari:config')
 #     run 'git clone --branch v2.2.10 https://github.com/swagger-api/swagger-ui.git swagger'
 # end
 
+# # clone swagger-ui using 2.0 specification
+# inside('public') do
+#     run 'git clone --branch v3.0.21 https://github.com/swagger-api/swagger-ui.git swagger'
+# end
+
 # copy swagger-ui & generate API Documentation
 directory 'public/swagger', 'public/swagger'
-run 'rails swagger:docs'
+# run 'rails swagger:blocks'
 
 # capistrano
 run 'bundle exec cap install'
@@ -272,7 +278,7 @@ gsub_file 'config/deploy.rb', /#.*$/, ""
 insert_into_file 'config/deploy.rb', after: /lock.*$/ do <<-EOF
 
 set :application, 'android.alodokter.com'
-set :rvm_ruby_version, '2.2.3@alodokter_android'
+set :rvm_ruby_version, '2.5.1@api-template'
 
 set :repo_url, 'git@bitbucket.org:kadriansyah_alodokter/android-user-application-backend.git'
 set :branch, 'master'

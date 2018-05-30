@@ -1,6 +1,8 @@
+require 'swagger/blocks'
 require_dependency 'moslemcorners/auth'
 
 class ApplicationController < ActionController::API
+    include Swagger::Blocks
     before_action :authenticate
 
     def verified?

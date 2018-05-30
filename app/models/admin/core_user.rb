@@ -1,11 +1,35 @@
-require 'moslemcorners/common_model'
 require 'bcrypt'
+require 'swagger/blocks'
+require 'moslemcorners/common_model'
 
 class Admin::CoreUser
     include BCrypt # Admin::CoreUser.password_hash in the database is a :string
     include Mongoid::Document
+    include Swagger::Blocks
     include MoslemCorners::CommonModel
     store_in collection: 'core_users'
+
+    swagger_schema 'Admin::CoreUser' do
+        key :required, [:email, :username, :firstname, :lastname, :token, :password_hash]
+        property :email do
+            key :type, :string
+        end
+        property :username do
+            key :type, :string
+        end
+        property :firstname do
+            key :type, :string
+        end
+        property :lastname do
+            key :type, :string
+        end
+        property :token do
+            key :type, :string
+        end
+        property :password_hash do
+            key :type, :string
+        end
+    end
 
     # kaminari page setting
     paginates_per 20
