@@ -25,18 +25,6 @@ module Admin
                     'core_user'
                 ]
                 parameter do
-                    key :name, :uid
-                    key :in, :header
-                    key :description, 'UID'
-                    key :required, true
-                end
-                parameter do
-                    key :name, :authorization
-                    key :in, :header
-                    key :description, 'Bearer [Token]'
-                    key :required, true
-                end
-                parameter do
                     key :name, :core_user
                     key :in, :body
                     key :description, 'User to add'
