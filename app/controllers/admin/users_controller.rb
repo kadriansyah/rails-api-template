@@ -107,7 +107,7 @@ module Admin
             end
         end
 
-        swagger_path '/admin/users/{id}' do
+        swagger_path '/admin/users/{id}/delete' do
             operation :delete do
                 key :summary, 'Delete User'
                 key :description, 'Delete user with certain id'
@@ -148,7 +148,7 @@ module Admin
                 end
             end
         end
-        def destroy
+        def delete
             if admin_service.delete_user(params[:id])
                 render :json => { status: '200', message: 'Success' }
             else

@@ -234,7 +234,7 @@ insert_into_file 'config/routes.rb', after: "Rails.application.routes.draw do\n"
         root to: 'admin#index'
         # http://guides.rubyonrails.org/routing.html#adding-more-restful-actions
         resources :users, controller: 'admin/users', only: [:index, :create, :update] do 
-            get 'delete', on: :member
+            delete 'delete', on: :member
             get 'edit', on: :member
         end
     end
