@@ -10,6 +10,7 @@ end
 
 # rvm environment related
 copy_file '.ruby-gemset'
+gsub_file '.ruby-gemset', /api-template/, "#{@app_name}"
 copy_file '.ruby-version'
 
 # Remove the gemfile so we can start with a clean slate otherwise Rails groups
@@ -83,7 +84,7 @@ development:
     default:
       # Defines the name of the default database that Mongoid can connect to.
       # (required).
-      database: moslemcorner
+      database: #{@app_name}
       # Provides the hosts the default client can connect to. Must be an array
       # of host:port pairs. (required)
       hosts:
@@ -102,7 +103,7 @@ development:
         #     - use: web
 
         # The name of the user for authentication.
-        user: 'moslemcorner'
+        user: 'admin'
 
         # The password of the user for authentication.
         password: 'password'
@@ -272,7 +273,6 @@ generate('kaminari:config')
 
 # copy swagger-ui & generate API Documentation
 directory 'public/swagger', 'public/swagger'
-# run 'rails swagger:blocks'
 
 # capistrano
 run 'bundle exec cap install'
@@ -282,7 +282,7 @@ gsub_file 'config/deploy.rb', /#.*$/, ""
 insert_into_file 'config/deploy.rb', after: /lock.*$/ do <<-EOF
 
 set :application, 'appname'
-set :rvm_ruby_version, '2.5.1@api-template'
+set :rvm_ruby_version, '2.5.1@#{@app_name}'
 
 # Select a gemset
 # example ruby-2.3.3@rails
