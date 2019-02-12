@@ -1,12 +1,12 @@
 require 'bcrypt'
 require 'swagger/blocks'
-require 'moslemcorners/common_model'
+require 'markazuna/common_model'
 
 class Admin::CoreUser
     include BCrypt # Admin::CoreUser.password_hash in the database is a :string
     include Mongoid::Document
     include Swagger::Blocks
-    include MoslemCorners::CommonModel
+    include Markazuna::CommonModel
     store_in collection: 'core_users'
 
     swagger_schema 'Admin::CoreUser' do

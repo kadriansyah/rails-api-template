@@ -1,5 +1,5 @@
 require 'swagger/blocks'
-require_dependency 'moslemcorners/auth'
+require_dependency 'markazuna/auth'
 
 class ApplicationController < ActionController::API
     include Swagger::Blocks
@@ -46,7 +46,7 @@ class ApplicationController < ActionController::API
     end
 
     def auth
-        MoslemCorners::Auth.decode(token)
+        Markazuna::Auth.decode(token)
     end
 
     def auth_present?

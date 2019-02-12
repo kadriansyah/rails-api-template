@@ -1,10 +1,10 @@
-require_dependency 'moslemcorners/auth'
+require_dependency 'markazuna/auth'
 
 module Admin
     class AdminService
         def create_user(user_form)
             if user_form.save
-                token = MoslemCorners::Auth.issue({core_user: user_form.core_user.id.to_s}) # use to_s because we don't want $OID
+                token = Markazuna::Auth.issue({core_user: user_form.core_user.id.to_s}) # use to_s because we don't want $OID
                 user_form.core_user.update_attribute(:token, token)
                 return token, user_form.core_user.id.to_s
             else

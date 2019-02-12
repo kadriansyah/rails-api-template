@@ -9,19 +9,19 @@ class ApidocsController < ActionController::Base
         key :swagger, '2.0'
         info do
             key :version, '1.0.0'
-            key :title, 'MoslemCorners API Template'
-            key :description, 'MoslemCorners API Template using swagger-2.0 specification'
+            key :title, 'Markazuna API Template'
+            key :description, 'Markazuna API Template using swagger-2.0 specification'
             key :termsOfService, 'https://policies.google.com/terms?hl=en&gl=id'
             contact do
-                key :name, 'MoslemCorners API Team'
+                key :name, 'Markazuna API Team'
             end
             license do
                 key :name, 'MIT'
             end
         end
         tag do
-            key :name, 'MoslemCorners'
-            key :description, 'MoslemCorners Operations'
+            key :name, 'Markazuna'
+            key :description, 'Markazuna Operations'
             externalDocs do
                 key :description, 'Find more info here'
                 key :url, 'https://swagger.io'

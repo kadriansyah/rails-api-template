@@ -1,10 +1,10 @@
-require 'moslemcorners/api_cache'
-require 'moslemcorners/di_container'
+require 'markazuna/api_cache'
+require 'markazuna/di_container'
 
 module Admin
     class UsersController < ApplicationController
-        include MoslemCorners::APICache
-        include MoslemCorners::INJECT[:admin_service]
+        include Markazuna::APICache
+        include Markazuna::INJECT[:admin_service]
 
         before_action :authenticate, except: [:create]
         after_action :create_cache, only: [:index]

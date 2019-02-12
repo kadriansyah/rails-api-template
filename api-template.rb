@@ -1,5 +1,8 @@
-# rails api template (kadriansyah@gmail.com)
+## rails api template (kadriansyah@gmail.com)
 # rails new [app_name] --api --skip-active-record -m rails-api-template/api-template.rb
+
+## scaffolding for model
+# rails g markazuna hub/hospital --service_name hospital_service --fields id name description
 
 def source_paths
   [File.expand_path(File.dirname(__FILE__))]
@@ -225,7 +228,7 @@ directory "config", "config"
 
 # configure routing
 insert_into_file 'config/routes.rb', after: "Rails.application.routes.draw do\n" do <<-EOF
-    root to: redirect('/swagger/dist/index.html?url=/apidocs')
+    root to: redirect('/swagger/index.html?url=/apidocs')
     resources :apidocs, only: [:index]
     scope :admin do
         root to: 'admin#index'
