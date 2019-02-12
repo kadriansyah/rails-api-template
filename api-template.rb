@@ -232,9 +232,10 @@ insert_into_file 'config/routes.rb', after: "Rails.application.routes.draw do\n"
     resources :apidocs, only: [:index]
     scope :admin do
         root to: 'admin#index'
-        resources :users, controller: 'admin/users' do
-            get 'delete', on: :member # http://guides.rubyonrails.org/routing.html#adding-more-restful-actions
-            put 'update', on: :collection
+        # http://guides.rubyonrails.org/routing.html#adding-more-restful-actions
+        resources :users, controller: 'admin/users', only: [:index, :create, :update] do 
+            get 'delete', on: :member
+            get 'edit', on: :member
         end
     end
     EOF

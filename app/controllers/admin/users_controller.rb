@@ -34,7 +34,7 @@ module Admin
                     end
                 end
                 response 200 do
-                    key :description, 'create user response'
+                    key :description, 'Success Response'
                     schema do
                         key :'$ref', 'Admin::CreateResponse'
                     end
@@ -82,7 +82,7 @@ module Admin
                     key :required, true
                 end
                 response 200 do
-                    key :description, 'users response'
+                    key :description, 'Success Response'
                     schema do
                         key :type, :array
                         items do
@@ -138,7 +138,7 @@ module Admin
                     key :required, true
                 end
                 response 200 do
-                    key :description, 'user deleted'
+                    key :description, 'Success Response'
                 end
                 response :default do
                     key :description, 'unexpected error'
@@ -187,7 +187,7 @@ module Admin
                     key :required, true
                 end
                 response 200 do
-                    key :description, 'user deleted'
+                    key :description, 'Success Response'
                     schema do
                         key :'$ref', 'Admin::EditResponse'
                     end
@@ -238,6 +238,12 @@ module Admin
                     key :required, true
                 end
                 parameter do
+                    key :name, :id
+                    key :in, :path
+                    key :description, 'User ID'
+                    key :required, true
+                end
+                parameter do
                     key :name, :core_user
                     key :in, :body
                     key :description, 'User to update'
@@ -247,7 +253,7 @@ module Admin
                     end
                 end
                 response 200 do
-                    key :description, 'user updated'
+                    key :description, 'Success Response'
                     schema do
                         key :'$ref', 'Common::Response'
                     end
@@ -262,6 +268,7 @@ module Admin
         end
         def update
             user_form = Admin::UserForm.new(user_form_params)
+            user_form.id = params[:id]
             if admin_service.update_user(user_form)
                 render :json => { status: '200', message: 'Update Success' }
             else
