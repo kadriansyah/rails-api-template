@@ -9,10 +9,10 @@ class MarkazunaGenerator < Rails::Generators::NamedBase
 		@fields = options['fields']
 		if class_path[0].nil?
 			@class_name = (class_path + [plural_name]).map!(&:camelize).join("::")
-			template "controller.rb", File.join("app/controllers", "#{plural_file_name}_controller.rb")
+			template "controller.erb", File.join("app/controllers", "#{plural_file_name}_controller.rb")
 		else
 			@class_name = (class_path + [plural_name]).map!(&:camelize).join("::")
-			template "controller.rb", File.join("app/controllers/#{class_path[0]}", "#{plural_file_name}_controller.rb")
+			template "controller.erb", File.join("app/controllers/#{class_path[0]}", "#{plural_file_name}_controller.rb")
 		end
 	end
 
@@ -20,18 +20,18 @@ class MarkazunaGenerator < Rails::Generators::NamedBase
 		@service_name = options['service_name']
 		@fields = options['fields']
 		if class_path[0].nil?
-			template "model.rb", File.join("app/models", "#{file_name}.rb")
+			template "model.erb", File.join("app/models", "#{file_name}.rb")
 		else
-			template "model.rb", File.join("app/models/#{class_path[0]}", "#{file_name}.rb")
+			template "model.erb", File.join("app/models/#{class_path[0]}", "#{file_name}.rb")
 		end
 	end
 
 	def generate_edit_response_files
 		@fields = options['fields']
 		if class_path[0].nil?
-			template "edit_response.rb", File.join("app/models", "#{file_name}_edit_response.rb")
+			template "edit_response.erb", File.join("app/models", "#{file_name}_edit_response.rb")
 		else
-			template "edit_response.rb", File.join("app/models/#{class_path[0]}", "#{file_name}_edit_response.rb")
+			template "edit_response.erb", File.join("app/models/#{class_path[0]}", "#{file_name}_edit_response.rb")
 		end
 	end
 
@@ -39,9 +39,9 @@ class MarkazunaGenerator < Rails::Generators::NamedBase
 		@service_name = options['service_name']
 		@fields = options['fields']
 		if class_path[0].nil?
-			template "service.rb", File.join("app/services", "#{file_name}_service.rb")
+			template "service.erb", File.join("app/services", "#{file_name}_service.rb")
 		else
-			template "service.rb", File.join("app/services/#{class_path[0]}", "#{file_name}_service.rb")
+			template "service.erb", File.join("app/services/#{class_path[0]}", "#{file_name}_service.rb")
 		end
 	end
 
@@ -49,79 +49,86 @@ class MarkazunaGenerator < Rails::Generators::NamedBase
 		@service_name = options['service_name']
 		@fields = options['fields']
 		if class_path[0].nil?
-			template "value_object.rb", File.join("app/value_objects", "#{file_name}_form.rb")
+			template "value_object.erb", File.join("app/value_objects", "#{file_name}_form.rb")
 		else
-			template "value_object.rb", File.join("app/value_objects/#{class_path[0]}", "#{file_name}_form.rb")
+			template "value_object.erb", File.join("app/value_objects/#{class_path[0]}", "#{file_name}_form.rb")
 		end
 	end
 
 	def generate_serializer_files
 		@fields = options['fields']
 		if class_path[0].nil?
-			template "serializer.rb", File.join("app/serializers", "#{file_name}_serializer.rb")
+			template "serializer.erb", File.join("app/serializers", "#{file_name}_serializer.rb")
 		else
-			template "serializer.rb", File.join("app/serializers/#{class_path[0]}", "#{file_name}_serializer.rb")
+			template "serializer.erb", File.join("app/serializers/#{class_path[0]}", "#{file_name}_serializer.rb")
 		end
 	end
 
-	# def generate_component_files
-	# 	@service_name = options['service_name']
-	# 	@fields = options['fields']
+	def generate_other_files
+		@service_name = options['service_name']
+		@fields = options['fields']
 
-	# 	if class_path[0].nil?
-	# 		@url = "/#{plural_name}"
-	# 		@component_path = "components"
-	# 		template "component-form.rb", File.join("app/javascript/packs/components", "#{singular_name}-form.js")
-	# 		template "component-list.rb", File.join("app/javascript/packs/components", "#{singular_name}-list.js")
-	# 		template "component.rb", File.join("app/javascript/packs/components", "#{plural_name}.js")
-	# 	else
-	# 		@url = "/#{class_path[0]}/#{plural_name}"
-	# 		@component_path = "components/#{class_path[0]}"
-	# 		template "component-form.rb", File.join("app/javascript/packs/components/#{class_path[0]}", "#{singular_name}-form.js")
-	# 		template "component-list.rb", File.join("app/javascript/packs/components/#{class_path[0]}", "#{singular_name}-list.js")
-	# 		template "component.rb", File.join("app/javascript/packs/components/#{class_path[0]}", "#{plural_name}.js")
-	# 	end
+		# routes
+		if class_path[0].nil?
+			insert_into_file 'config/routes.rb', before: /end\Z/ do <<-RUBY
+	resources :#{plural_name}, controller: '#{plural_name}' do
+		get 'delete', on: :member
+		get 'edit', on: :member
+	end
+			RUBY
+			end
+		else
+			insert_into_file 'config/routes.rb', before: /end\Z/ do <<-RUBY
+	scope :#{class_path[0]} do
+		resources :#{plural_name}, controller: '#{class_path[0]}/#{plural_name}' do
+			get 'delete', on: :member
+			get 'edit', on: :member
+		end
+	end
+		RUBY
+			end
+		end
 
-	# 	if class_path[0].nil?
-	# 		template "component-html.rb", File.join("app/views", "#{plural_name}.html.erb")
-	# 	else
-	# 		template "component-html.rb", File.join("app/views/#{class_path[0]}", "#{plural_name}.html.erb")
-	# 	end
+		# DI Container
+		if class_path[0].nil?
+			insert_into_file 'lib/markazuna/di_container.rb', after: "extend Dry::Container::Mixin\n" do <<-RUBY
 
-	# 	# routes
-	# 	if class_path[0].nil?
-	# 		insert_into_file 'config/routes.rb', before: /end\Z/ do <<-RUBY
-	# resources :#{plural_name}, controller: '#{plural_name}' do
-	# 	get 'delete', on: :member # http://guides.rubyonrails.org/routing.html#adding-more-restful-actions
-	# end
-	# 		RUBY
-	# 		end
-	# 	else
-	# 		insert_into_file 'config/routes.rb', before: /end\Z/ do <<-RUBY
-	# resources :#{plural_name}, controller: '#{class_path[0]}/#{plural_name}' do
-	# 	get 'delete', on: :member # http://guides.rubyonrails.org/routing.html#adding-more-restful-actions
-	# end
-	# 	RUBY
-	# 		end
-	# 	end
+		register :#{singular_name}_service do
+			#{singular_name.capitalize}Service.new
+		end
+		RUBY
+			end
+		else
+			insert_into_file 'lib/markazuna/di_container.rb', after: "extend Dry::Container::Mixin\n" do <<-RUBY
 
-	# 	# DI Container
-	# 	if class_path[0].nil?
-	# 		insert_into_file 'lib/markazuna/di_container.rb', after: "extend Dry::Container::Mixin\n" do <<-RUBY
+		register :#{singular_name}_service do
+			#{class_path[0].capitalize}::#{singular_name.capitalize}Service.new
+		end
+		RUBY
+			end
+		end
 
-	# 	register '#{singular_name}_service' do
-	# 		#{singular_name.capitalize}Service.new
-	# 	end
-	# 	RUBY
-	# 		end
-	# 	else
-	# 		insert_into_file 'lib/markazuna/di_container.rb', after: "extend Dry::Container::Mixin\n" do <<-RUBY
+		# apidocs controller
+		if class_path[0].nil?
+			insert_into_file 'app/controllers/apidocs_controller.rb', after: "require 'admin/core_user'\n" do <<-RUBY
+require '#{plural_file_name}_controller'
+require '#{file_name}'
+			RUBY
+			end
+		else
+			insert_into_file 'app/controllers/apidocs_controller.rb', after: "require 'admin/core_user'\n" do <<-RUBY
+require '#{class_path[0]}/#{plural_file_name}_controller'
+require '#{class_path[0]}/#{file_name}'
+			RUBY
+			end
+		end
 
-	# 	register '#{singular_name}_service' do
-	# 		#{class_path[0].capitalize}::#{singular_name.capitalize}Service.new
-	# 	end
-	# 	RUBY
-	# 		end
-	# 	end
-  #   end
+		insert_into_file 'app/controllers/apidocs_controller.rb', after: "SWAGGERED_CLASSES = [\n" do <<-RUBY
+		#{@class_name}Controller,
+		#{class_name},
+		#{class_name}Form,
+		#{class_name}EditResponse,
+		RUBY
+		end
+    end
 end

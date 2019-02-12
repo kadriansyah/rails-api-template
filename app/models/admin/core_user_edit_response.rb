@@ -1,7 +1,7 @@
-class Admin::EditResponse
+class Admin::CoreUserEditResponse
     include Swagger::Blocks
 
-    swagger_schema 'Admin::EditResponse' do
+    swagger_schema 'Admin::CoreUserEditResponse' do
         key :required, [:status, :payload]
         property :status do
             key :type, :string

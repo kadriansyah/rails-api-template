@@ -38,8 +38,8 @@ class ApidocsController < ActionController::Base
         Admin::UsersController,
         Admin::CoreUser,
         Admin::UserForm,
-        Admin::CreateResponse,
-        Admin::EditResponse,
+        Admin::CoreUserCreateResponse,
+        Admin::CoreUserEditResponse,
         Common::Response,
         self,
     ].freeze

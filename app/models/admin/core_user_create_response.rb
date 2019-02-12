@@ -1,7 +1,7 @@
-class Admin::CreateResponse
+class Admin::CoreUserCreateResponse
     include Swagger::Blocks
 
-    swagger_schema 'Admin::CreateResponse' do
+    swagger_schema 'Admin::CoreUserCreateResponse' do
         key :required, [:status, :message, :uid, :token]
         property :status do
             key :type, :string

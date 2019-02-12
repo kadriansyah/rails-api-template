@@ -36,7 +36,7 @@ module Admin
                 response 200 do
                     key :description, 'Success Response'
                     schema do
-                        key :'$ref', 'Admin::CreateResponse'
+                        key :'$ref', 'Admin::CoreUserCreateResponse'
                     end
                 end
                 response :default do
@@ -189,7 +189,7 @@ module Admin
                 response 200 do
                     key :description, 'Success Response'
                     schema do
-                        key :'$ref', 'Admin::EditResponse'
+                        key :'$ref', 'Admin::CoreUserEditResponse'
                     end
                 end
                 response :default do

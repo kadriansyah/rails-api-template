@@ -2,6 +2,7 @@ require 'swagger/blocks'
 require_dependency 'markazuna/auth'
 
 class ApplicationController < ActionController::API
+    include ActionController::MimeResponds
     include Swagger::Blocks
     before_action :authenticate
 

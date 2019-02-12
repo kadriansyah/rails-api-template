@@ -9,7 +9,7 @@ require 'markazuna/di_container'
 %>
 class <%= @class_name %>Controller < ApplicationController
     include Markazuna::APICache
-    include Markazuna::INJECT['<%= @service_name %>']
+    include Markazuna::INJECT[:<%= @service_name %>]
 
     before_action   :authenticate
     after_action    :create_cache, only: [:index]
@@ -30,7 +30,19 @@ class <%= @class_name %>Controller < ApplicationController
                 '<%= singular_name %>'
             ]
             parameter do
-                key :name, :core_user
+                key :name, :uid
+                key :in, :header
+                key :description, 'UID'
+                key :required, true
+            end
+            parameter do
+                key :name, :authorization
+                key :in, :header
+                key :description, 'Bearer [Token]'
+                key :required, true
+            end
+            parameter do
+                key :name, :<%= singular_name %>
                 key :in, :body
                 key :description, 'Please provide description'
                 key :required, true
@@ -39,7 +51,7 @@ class <%= @class_name %>Controller < ApplicationController
                 end
             end
             response 200 do
-                key :description, 'Please provide description'
+                key :description, 'Success Response'
                 schema do
                     key :'$ref', 'Common::Response'
                 end
@@ -90,7 +102,7 @@ class <%= @class_name %>Controller < ApplicationController
                 key :required, true
             end
             response 200 do
-                key :description, 'Please provide description'
+                key :description, 'Success Response'
                 schema do
                     key :type, :array
                     items do
@@ -117,7 +129,7 @@ class <%= @class_name %>Controller < ApplicationController
         end
     end
 
-    swagger_path '/<%= class_path[0] %>/<%= plural_file_name %>/{id}' do
+    swagger_path '/<%= class_path[0] %>/<%= plural_file_name %>/{id}/delete' do
         operation :delete do
             key :summary, 'Please provide summary of this endpoint'
             key :description, 'Please provide description of this endpoint'
@@ -144,11 +156,11 @@ class <%= @class_name %>Controller < ApplicationController
             parameter do
                 key :name, :id
                 key :in, :path
-                key :description, 'Please provide description'
+                key :description, 'ID'
                 key :required, true
             end
             response 200 do
-                key :description, 'Please provide description'
+                key :description, 'Success Response'
             end
             response :default do
                 key :description, 'unexpected error'
@@ -158,7 +170,7 @@ class <%= @class_name %>Controller < ApplicationController
             end
         end
     end
-    def destroy
+    def delete
         status, page_count = <%= @service_name %>.delete_<%= singular_name %>(params[:id])
         if status
             respond_to do |format|
@@ -198,11 +210,11 @@ class <%= @class_name %>Controller < ApplicationController
             parameter do
                 key :name, :id
                 key :in, :path
-                key :description, 'Please provide description'
+                key :description, 'ID'
                 key :required, true
             end
             response 200 do
-                key :description, 'Please provide description'
+                key :description, 'Success Response'
                 schema do
                     key :'$ref', '<%= class_name %>EditResponse'
                 end
@@ -216,9 +228,7 @@ class <%= @class_name %>Controller < ApplicationController
         end
     end
     def edit
-        id = params[:id]
-        <%= singular_name %> = <%= @service_name %>.find_<%= singular_name %>(id)
-
+        <%= singular_name %> = <%= @service_name %>.find_<%= singular_name %>(params[:id])
         if <%= singular_name %>
             respond_to do |format|
                 format.json { render :json => { status: "200", payload: <%= singular_name %> } }
@@ -255,6 +265,12 @@ class <%= @class_name %>Controller < ApplicationController
                 key :required, true
             end
             parameter do
+                key :name, :id
+                key :in, :path
+                key :description, 'ID'
+                key :required, true
+            end
+            parameter do
                 key :name, :core_user
                 key :in, :body
                 key :description, 'Please provide description'
@@ -264,7 +280,7 @@ class <%= @class_name %>Controller < ApplicationController
                 end
             end
             response 200 do
-                key :description, 'Please provide description'
+                key :description, 'Success Response'
                 schema do
                     key :'$ref', 'Common::Response'
                 end
@@ -279,6 +295,7 @@ class <%= @class_name %>Controller < ApplicationController
     end
     def update
         <%= singular_name %>_form = <%= class_name %>Form.new(<%= singular_name %>_form_params)
+        <%= singular_name %>_form.id = params[:id]
         if <%= @service_name %>.update_<%= singular_name %>(<%= singular_name %>_form)
             respond_to do |format|
                 format.json { render :json => { status: "200", message: "Success" } }
