@@ -281,17 +281,10 @@ gsub_file 'config/deploy.rb', /set :repo_url.*$/, ""
 gsub_file 'config/deploy.rb', /#.*$/, ""
 insert_into_file 'config/deploy.rb', after: /lock.*$/ do <<-EOF
 
-set :application, 'appname'
+set :application, '#{@app_name}'
 set :rvm_ruby_version, '2.5.1@#{@app_name}'
 
-# Select a gemset
-# example ruby-2.3.3@rails
-set :rvm_ruby_version, 'ruby-X.X.X@name_of_gemset'
-
-# URL to the repository.
-set :repo_url, 'ssh://git@example.com:30000/~/me/my_repo.git'
-
-# The branch name to be deployed
+set :repo_url, 'git@github.com:kadriansyah/#{@app_name}.git'
 set :branch, 'master'
 
 set :user,  '<ssh user>'
