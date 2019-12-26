@@ -2,7 +2,7 @@ version: "3"
 services:
   mongo:
     image: kadriansyah/mongo
-    container_name: mongo
+    container_name: mongoapi
     ports:
       - 27017:27017
     volumes:
@@ -10,7 +10,7 @@ services:
       - mongo:/data/configdb
   app:
     image: kadriansyah/#appname
-    container_name: app
+    container_name: api
     tty: true
     environment:
       - RAILS_ENV='production'

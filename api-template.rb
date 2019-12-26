@@ -23,6 +23,7 @@ gsub_file 'run.sh', /#appname/, "#{@app_name}"
 run 'chmod +x run.sh'
 
 copy_file 'docker-compose.yml'
+copy_file 'docker-entrypoint.sh'
 copy_file 'Dockerfile'
 copy_file 'rails_s.sh'
 run 'chmod +x rails_s.sh'
@@ -186,6 +187,9 @@ gem_group :development, :test do
     gem 'spring'
     gem 'spring-watcher-listen'
 end
+
+# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
+gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # bundle
 run 'bundle install'

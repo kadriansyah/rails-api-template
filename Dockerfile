@@ -33,7 +33,6 @@ RUN set -ex \
     && bundle config build.nokogiri --use-system-libraries \
     && gem install pkg-config -v "~> 1.1" \
     && bundle install --jobs 20 --retry 5 \
-    && yarn install --check-files \
     && chown -R app:app .bundle;
 
 # make sure we make log and tmp owned by app
@@ -42,7 +41,6 @@ RUN set -ex \
     && mkdir log \
     && rm -rf tmp \
     && mkdir tmp \
-    && rails assets:clobber && rails assets:precompile \
     && chown -R app:app /var/www/html/#appname.com/public \
     && chown -R app:app tmp \
     && chown -R app:app log;
