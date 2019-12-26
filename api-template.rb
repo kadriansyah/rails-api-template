@@ -46,7 +46,13 @@ gsub_file 'Dockerfile', /#appname/, "#{app_name}"
 add_file "#{@app_name}.com"
 append_to_file "#{@app_name}.com", <<-EOF
 server {
-    listen 80;
+    # Permanent redirect to www
+    server_name #{@app_name}.com;
+    rewrite ^/(.*)$ https://www.#{@app_name}.com/$1 permanent;
+}
+
+server {
+    listen 8080;
     server_name #{@app_name}.com;
 
     # Tell Nginx and Passenger where your app's 'public' directory is
@@ -54,6 +60,53 @@ server {
 
     # Prevent (deny) Access to Hidden Files with Nginx
     location ~ /\\. {
+        access_log off;
+        log_not_found off; 
+        deny all;
+    }
+
+    location = /robots.txt {
+        allow all;
+        log_not_found off;
+        access_log off;
+    }
+
+    # set the expire date to max for assets
+    location ~ "^/assets/(.*/)*.*-[0-9a-f]{32}.*" {
+        gzip_static on;
+        expires     max;
+        add_header  Cache-Control public;
+    }
+
+    error_page  405     =200 $uri;
+
+    location / {
+        try_files /page_cache/$request_uri @passenger;
+    }
+
+    location @passenger {
+        passenger_enabled on;
+        passenger_user app;
+        passenger_ruby /usr/local/bin/ruby;
+        passenger_app_env production;
+        passenger_min_instances 100;
+    }
+}
+
+server {
+    listen 8443;
+
+    ssl     on;
+    ssl_certificate     /etc/ssl/#{@app_name}.pem;
+    ssl_certificate_key     /etc/ssl/#{@app_name}.key;
+
+    server_name www.#{@app_name}.com;
+
+    # Tell Nginx and Passenger where your app's 'public' directory is
+    root /var/www/html/#{@app_name}.com/public;
+
+    # Prevent (deny) Access to Hidden Files with Nginx
+    location ~ /\. {
         access_log off;
         log_not_found off; 
         deny all;
