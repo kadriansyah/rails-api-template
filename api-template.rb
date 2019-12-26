@@ -15,11 +15,11 @@ copy_file '.ruby-version'
 
 # docker
 copy_file 'build.sh'
-gsub_file 'build.sh', /#appname/, "#{app_name}"
+gsub_file 'build.sh', /#appname/, "#{@app_name}"
 run 'chmod +x build.sh'
 
 copy_file 'run.sh'
-gsub_file 'run.sh', /#appname/, "#{app_name}"
+gsub_file 'run.sh', /#appname/, "#{@app_name}"
 run 'chmod +x run.sh'
 
 copy_file 'docker-compose.yml'
@@ -28,19 +28,19 @@ copy_file 'rails_s.sh'
 run 'chmod +x rails_s.sh'
 
 copy_file 'reload.sh'
-gsub_file 'reload.sh', /#appname/, "#{app_name}"
+gsub_file 'reload.sh', /#appname/, "#{@app_name}"
 run 'chmod +x reload.sh'
 
 copy_file 'init_db.sh'
-gsub_file 'init_db.sh', /#appname/, "#{app_name}"
+gsub_file 'init_db.sh', /#appname/, "#{@app_name}"
 run 'chmod +x init_db.sh'
 
 copy_file 'production_log.sh'
-gsub_file 'production_log.sh', /#appname/, "#{app_name}"
+gsub_file 'production_log.sh', /#appname/, "#{@app_name}"
 run 'chmod +x production_log.sh'
 
-gsub_file 'docker-compose.yml', /#appname/, "#{app_name}"
-gsub_file 'Dockerfile', /#appname/, "#{app_name}"
+gsub_file 'docker-compose.yml', /#appname/, "#{@app_name}"
+gsub_file 'Dockerfile', /#appname/, "#{@app_name}"
 
 # nginx virtual host (be carefull with backslash on location, we need to escape it using double backslash)
 add_file "#{@app_name}.com"
