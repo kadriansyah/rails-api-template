@@ -18,6 +18,8 @@ copy_file 'build.sh'
 gsub_file 'build.sh', /#appname/, "#{@app_name}"
 run 'chmod +x build.sh'
 
+copy_file 'network.sh'
+
 copy_file 'run.sh'
 gsub_file 'run.sh', /#appname/, "#{@app_name}"
 run 'chmod +x run.sh'

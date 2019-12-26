@@ -27,3 +27,7 @@ services:
 volumes:
   mongo:
     driver: local
+networks:
+  default:
+    external:
+      name: development_default
