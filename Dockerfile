@@ -29,6 +29,7 @@ RUN chmod +x reload.sh
 RUN chmod +x rails_s.sh
 
 ENV RAILS_ENV='production'
+RUN gem install bundler:2.1.2;
 RUN set -ex \
     && bundle config build.nokogiri --use-system-libraries \
     && gem install pkg-config -v "~> 1.1" \

@@ -175,6 +175,7 @@ gem 'figaro' # put environment variable on application.yml
 gem 'bcrypt'
 gem 'swagger-blocks'
 gem 'capistrano'
+gem 'tzinfo-data'
 
 gem_group :development do
     gem 'byebug', platform: :mri
@@ -187,9 +188,6 @@ gem_group :development, :test do
     gem 'spring'
     gem 'spring-watcher-listen'
 end
-
-# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # bundle
 run 'bundle install'
