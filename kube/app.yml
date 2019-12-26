@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  labels:
+    app: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+        - name: app
+          image: gcr.io/development-234608/markazuna_app:v1
+          imagePullPolicy: Always # use this on development only!
+          env:
+          - name: RAILS_ENV
+            value: "production"
+          - name: RAILS_SERVE_STATIC_FILES
+            value: "true"
+          ports:
+            - containerPort: 80
+              name: app
+          workingDir: "/var/www/html/markazuna.com"

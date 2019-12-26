@@ -1,0 +1,29 @@
+version: "3"
+services:
+  mongo:
+    image: kadriansyah/mongo
+    container_name: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo:/data/db
+      - mongo:/data/configdb
+  app:
+    image: kadriansyah/#appname
+    container_name: app
+    tty: true
+    environment:
+      - RAILS_ENV='production'
+      - RAILS_SERVE_STATIC_FILES=true
+    command: ["nginx", "-g", "daemon off;"]
+    depends_on:
+      - mongo
+    ports:
+      - 80:8080
+      - 443:8443
+      - 3000:3000
+    volumes:
+      - ./:/var/www/html/#appname.com
+volumes:
+  mongo:
+    driver: local
