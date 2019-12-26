@@ -187,10 +187,11 @@ gem_group :development, :test do
     gem 'spring-watcher-listen'
 end
 
-# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
-
+# bundle
 run 'bundle install'
+
+# update bundler using newest version
+run 'bundle update --bundler'
 
 # copy controllers
 directory 'app/controllers', 'app/controllers'
@@ -204,14 +205,13 @@ directory 'app/value_objects', 'app/value_objects'
 # copy lib
 directory 'lib', 'lib'
 
-# mongoid
-remove_file 'config/database.yml'
-copy_file 'config/mongoid.yml', 'config/mongoid.yml'
-gsub_file 'config/mongoid.yml', /#dbname/, "#{app_name}"
-gsub_file 'config/mongoid.yml', /#hostname/, "mongo"
-
 # copy config
 directory "config", "config"
+
+# mongoid
+remove_file 'config/database.yml'
+gsub_file 'config/mongoid.yml', /#dbname/, "#{@app_name}"
+gsub_file 'config/mongoid.yml', /#hostname/, "mongo"
 
 # configure routing
 insert_into_file 'config/routes.rb', after: "Rails.application.routes.draw do\n" do <<-EOF
