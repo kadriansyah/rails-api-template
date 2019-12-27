@@ -2,11 +2,15 @@
 # rails new [app_name] --api --skip-active-record -m rails-api-template/api-template.rb
 
 ## scaffolding for model
-# rails g markazuna hub/hospital --service_name hospital_service --fields id name description
+# ./generator.sh scaffold --name Core::Category --fields "id,name,description" --service_name Core::CategoryService
 
 def source_paths
   [File.expand_path(File.dirname(__FILE__))]
 end
+
+# _templates generator
+directory '_templates'
+copy_file 'generator.sh'
 
 # rvm environment related
 copy_file '.ruby-gemset'
@@ -209,6 +213,12 @@ directory 'app/value_objects', 'app/value_objects'
 # copy lib
 directory 'lib', 'lib'
 
+# add hygen code generator
+run 'yarn add hygen'
+
+# prevent from check_yarn_integrity issue
+run 'yarn install --check-files'
+
 # copy config
 directory "config", "config"
 
@@ -335,6 +345,7 @@ end
 
 after_bundle do
   git :init
+  run 'echo node_modules >> .gitignore'
   git add: "."
   git commit: %Q{ -m 'Initial commit' }
 end
