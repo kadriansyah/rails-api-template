@@ -13,7 +13,7 @@ class <%= name %>Form
     validates :<%= field %>, presence: true<% }); %>
 
     swagger_schema '<%= name %>Form' do
-        key :required, [<% fields.split(',').forEach(function(field,idx){%>:<%= field %><% if(idx < fields.split(',').length - 1) { %>, <% }}); %>]<% fields.split(',').slice(1, fields.split(',').length).forEach(function (field) { %>
+        key :required, [<% fields.split(',').slice(1, fields.split(",").length).forEach(function(field,idx){%>:<%= field %><% if(idx < fields.split(',').length - 1) { %>, <% }}); %>]<% fields.split(',').slice(1, fields.split(',').length).forEach(function (field) { %>
         property :<%= field %> do
             key :type, :string
         end<% }); %>

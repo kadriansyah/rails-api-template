@@ -227,7 +227,6 @@ class <%= name.split('::').length > 1 ? name.split('::')[0] +'::'+ h.inflection.
     def edit
         id = params[:id]
         <%= h.inflection.transform(name, ['demodulize','underscore']) %> = <%= h.inflection.transform(service_name, ['demodulize','underscore']) %>.find_<%= h.inflection.transform(name, ['demodulize','underscore']) %>(id)
-
         if <%= h.inflection.transform(name, ['demodulize','underscore']) %>
             respond_to do |format|
                 format.json { render :json => { status: "200", payload: <%= h.inflection.transform(name, ['demodulize','underscore']) %> } }
@@ -294,6 +293,7 @@ class <%= name.split('::').length > 1 ? name.split('::')[0] +'::'+ h.inflection.
     end
     def update
         <%= h.inflection.transform(name, ['demodulize','underscore']) %>_form = <%= name %>Form.new(<%= h.inflection.transform(name, ['demodulize','underscore']) %>_form_params)
+        <%= h.inflection.transform(name, ['demodulize','underscore']) %>_form.id = params[:id]
         if <%= h.inflection.transform(service_name, ['demodulize','underscore']) %>.update_<%= h.inflection.transform(name, ['demodulize','underscore']) %>(<%= h.inflection.transform(name, ['demodulize','underscore']) %>_form)
             respond_to do |format|
                 format.json { render :json => { status: "200", message: "Success" } }
