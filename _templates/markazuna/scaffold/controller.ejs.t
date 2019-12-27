@@ -2,10 +2,11 @@
 to: "<%= name.split('::').length > 1 ? 'app/controllers/'+ h.changeCase.lower(name.split('::')[0]) +'/'+ h.inflection.transform(name, ['demodulize','underscore','pluralize']) +'_controller.rb' : 'app/controllers/'+ h.inflection.transform(name, ['demodulize','underscore','pluralize']) +'_controller.rb' %>"
 unless_exists: true
 ---
-require_dependency 'markazuna/api_cache'
-require_dependency 'markazuna/di_container'
+require 'markazuna/api_cache'
+require 'markazuna/di_container'
 
 class <%= name.split('::').length > 1 ? name.split('::')[0] +'::'+ h.inflection.transform(name, ['demodulize','pluralize']) : h.inflection.transform(name, ['demodulize','pluralize']) %>Controller < ApplicationController
+    include Markazuna::APICache
     include Markazuna::INJECT["<%= h.inflection.transform(service_name, ['demodulize','underscore']) %>"]
 
     before_action   :authenticate
