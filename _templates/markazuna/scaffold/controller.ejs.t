@@ -7,7 +7,7 @@ require 'markazuna/di_container'
 
 class <%= name.split('::').length > 1 ? name.split('::')[0] +'::'+ h.inflection.transform(name, ['demodulize','pluralize']) : h.inflection.transform(name, ['demodulize','pluralize']) %>Controller < ApplicationController
     include Markazuna::APICache
-    include Markazuna::INJECT["<%= h.inflection.transform(service_name, ['demodulize','underscore']) %>"]
+    include Markazuna::INJECT[:<%= h.inflection.transform(service_name, ['demodulize','underscore']) %>]
 
     before_action   :authenticate
     after_action    :create_cache, only: [:index]
@@ -266,7 +266,7 @@ class <%= name.split('::').length > 1 ? name.split('::')[0] +'::'+ h.inflection.
             parameter do
                 key :name, :id
                 key :in, :path
-                key :description, 'User ID'
+                key :description, 'Please provide description'
                 key :required, true
             end
             parameter do
