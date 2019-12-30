@@ -48,9 +48,6 @@ module Admin
         def save
             if valid?
                 begin
-                    Admin::CoreUser.find_by(username: self.username)
-                    false
-                rescue
                     @core_user = Admin::CoreUser.new(email: self.email,
                                                      username: self.username,
                                                      password: self.password,
@@ -58,6 +55,8 @@ module Admin
                                                      lastname: self.lastname)
                     @core_user.save
                     true
+                rescue
+                    false
                 end
             else
                 false
