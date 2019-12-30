@@ -10,7 +10,9 @@ end
 
 # _templates generator
 directory '_templates'
+
 copy_file 'generator.sh'
+run 'chmod +x generator.sh'
 
 # rvm environment related
 copy_file '.ruby-gemset'
